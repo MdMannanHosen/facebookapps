@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "FacebookApps"
+rootProject.name = "GymFlow"
 include(":app")

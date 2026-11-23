@@ -1,3 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
- <string name="app_name">FacebookApps</string>
+    <string name="app_name">GymFlow</string>
+
+    <!-- Common -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_back">Back</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_view_all">View all</string>
+    <string name="action_search">Search</string>
+    <string name="action_clear">Clear</string>
+
+    <!-- Auth -->
+    <string name="auth_login_title">Welcome back</string>
+    <string name="auth_login_subtitle">Sign in to manage your gym</string>
+    <string name="auth_email">Email</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_phone">Phone number</string>
+    <string name="auth_login">Sign in</string>
+    <string name="auth_signing_in">Signing in…</string>
+    <string name="auth_forgot_password">Forgot password?</string>
+    <string name="auth_create_account">Create account</string>
+    <string name="auth_full_name">Full name</string>
+    <string name="auth_confirm_password">Confirm password</string>
+    <string name="auth_login_success">Signed in successfully</string>
+    <string name="auth_login_failed">Sign in failed. Check your credentials.</string>
+    <string name="auth_session_expired">Your session expired. Please sign in again.</string>
+    <string name="auth_error_email_required">Email is required</string>
+    <string name="auth_error_email_invalid">Enter a valid email address</string>
+    <string name="auth_error_password_required">Password is required</string>
+    <string name="auth_error_password_short">Password must be at least 6 characters</string>
+    <string name="auth_error_name_required">Full name is required</string>
+    <string name="auth_error_password_mismatch">Passwords do not match</string>
+    <string name="auth_role_owner">Owner</string>
+    <string name="auth_role_staff">Staff</string>
+    <string name="auth_role_member">Member</string>
+    <string name="auth_welcome">Welcome</string>
+
+    <!-- Navigation labels -->
+    <string name="nav_home">Home</string>
+    <string name="nav_members">Members</string>
+    <string name="nav_payments">Payments</string>
+    <string name="nav_reports">Reports</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_owner_title">Dashboard</string>
+    <string name="dashboard_staff_title">Staff workspace</string>
+    <string name="dashboard_member_title">My gym</string>
+    <string name="stat_active_members">Active members</string>
+    <string name="stat_expiring_soon">Expiring soon</string>
+    <string name="stat_outstanding_dues">Outstanding dues</string>
+    <string name="stat_todays_collection">Today's collection</string>
+    <string name="stat_pending_payments">Pending payments</string>
+    <string name="stat_total_members">Total members</string>
+    <string name="quick_actions">Quick actions</string>
+    <string name="recent_payments">Recent payments</string>
+    <string name="add_member">Add member</string>
+    <string name="receive_payment">Receive payment</string>
+    <string name="renew_membership">Renew membership</string>
+    <string name="view_members">View members</string>
+    <string name="view_dues">View dues</string>
+    <string name="view_expiring">View expiring</string>
+    <string name="dashboard_empty">No activity yet</string>
+    <string name="dashboard_empty_desc">Payments and members will appear here once you start using the app.</string>
+    <string name="dashboard_error">Couldn't load dashboard</string>
+
+    <!-- Members -->
+    <string name="members_title">Members</string>
+    <string name="members_search_hint">Search by name or phone</string>
+    <string name="members_add_new">Add member</string>
+    <string name="members_empty">No members found</string>
+    <string name="members_empty_desc">Add your first member to get started.</string>
+    <string name="member_detail_title">Member details</string>
+    <string name="member_name">Name</string>
+    <string name="member_phone">Phone</string>
+    <string name="member_email">Email</string>
+    <string name="member_joined">Joined on</string>
+    <string name="member_status">Status</string>
+    <string name="member_membership">Membership</string>
+    <string name="member_payment_history">Payment history</string>
+    <string name="member_contact">Contact</string>
+    <string name="member_no_membership">No active membership</string>
+    <string name="member_edit">Edit member</string>
+    <string name="member_delete_title">Delete member?</string>
+    <string name="member_delete_message">This will remove the member and their records. This action cannot be undone.</string>
+    <string name="member_delete_success">Member deleted</string>
+    <string name="member_actions">Actions</string>
+    <string name="member_deleting">Deleting…</string>
+    <string name="member_delete_forever">Delete member</string>
+    <string name="member_save_success">Member saved</string>
+    <string name="member_error_name_required">Name is required</string>
+    <string name="member_error_phone_required">Phone number is required</string>
+    <string name="member_error_phone_invalid">Enter a valid phone number</string>
+    <string name="filter_all">All</string>
+    <string name="filter_active">Active</string>
+    <string name="filter_expiring">Expiring</string>
+    <string name="filter_expired">Expired</string>
+    <string name="filter_dues">With dues</string>
+
+    <!-- Membership -->
+    <string name="plan_title">Membership plans</string>
+    <string name="plan_fee">Fee</string>
+    <string name="plan_duration">Duration</string>
+    <string name="plan_months">%1$d months</string>
+    <string name="plan_active">Active</string>
+    <string name="plan_inactive">Inactive</string>
+    <string name="plan_empty">No membership plans configured</string>
+    <string name="plan_select">Select plan</string>
+    <string name="membership_start">Start date</string>
+    <string name="membership_end">End date</string>
+    <string name="membership_status_active">Active</string>
+    <string name="membership_status_expiring">Expiring soon</string>
+    <string name="membership_status_expired">Expired</string>
+    <string name="membership_status_frozen">Frozen</string>
+    <string name="membership_status_pending">Pending</string>
+    <string name="membership_create_title">Create membership</string>
+    <string name="membership_renew_title">Renew membership</string>
+    <string name="membership_start_from_today">Start from today</string>
+    <string name="membership_early_renewal">Early renewal</string>
+    <string name="membership_after_expiry">Renews after current expiry</string>
+    <string name="membership_create_success">Membership created</string>
+    <string name="membership_renew_success">Membership renewed</string>
+    <string name="membership_error_select_member">Select a member</string>
+    <string name="membership_error_select_plan">Select a plan</string>
+
+    <!-- Payments -->
+    <string name="payment_receive_title">Receive payment</string>
+    <string name="payment_amount">Amount</string>
+    <string name="payment_method">Payment method</string>
+    <string name="payment_reference">Reference / Transaction ID</string>
+    <string name="payment_note">Note (optional)</string>
+    <string name="payment_collect">Collect payment</string>
+    <string name="payment_collect_processing">Processing…</string>
+    <string name="payment_due_amount">Due amount</string>
+    <string name="payment_paid_amount">Paid</string>
+    <string name="payment_outstanding">Outstanding</string>
+    <string name="payment_success">Payment recorded</string>
+    <string name="payment_error_amount_required">Enter an amount</string>
+    <string name="payment_error_amount_positive">Amount must be greater than zero</string>
+    <string name="payment_error_exceeds_due">Amount exceeds the outstanding due</string>
+    <string name="payment_history_title">Payment history</string>
+    <string name="payment_status_success">Successful</string>
+    <string name="payment_status_pending">Pending</string>
+    <string name="payment_status_failed">Failed</string>
+    <string name="payment_status_refunded">Refunded</string>
+    <string name="payment_method_cash">Cash</string>
+    <string name="payment_method_online">Online</string>
+    <string name="payment_method_bkash">bKash</string>
+    <string name="payment_method_nagad">Nagad</string>
+    <string name="payment_method_card">Card</string>
+    <string name="payment_method_bank">Bank</string>
+    <string name="payment_history_empty">No payments yet</string>
+    <string name="payment_history_empty_desc">Payment records for this member will appear here.</string>
+    <string name="dues_title">Outstanding dues</string>
+    <string name="dues_empty">No pending dues</string>
+    <string name="dues_empty_desc">All members are up to date. 🎉</string>
+    <string name="dues_mark_paid">Collect</string>
+    <string name="pay_now">Pay now</string>
+    <string name="pay_online_title">Pay online</string>
+    <string name="pay_online_desc">Online payment will open a secure checkout powered by your payment gateway.</string>
+    <string name="pay_online_unavailable">Online payment is not available yet. Please pay at the front desk.</string>
+
+    <!-- Reports -->
+    <string name="report_title">Daily report</string>
+    <string name="report_date">Date</string>
+    <string name="report_total_collection">Total collection</string>
+    <string name="report_cash">Cash</string>
+    <string name="report_online">Online</string>
+    <string name="report_new_members">New members</string>
+    <string name="report_renewals">Renewals</string>
+    <string name="report_payments_count">Payments received</string>
+    <string name="report_outstanding">Outstanding dues</string>
+    <string name="report_empty">No data for this date</string>
+    <string name="report_export">Export</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_profile">Profile</string>
+    <string name="settings_staff_permissions">Staff permissions</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_about">About</string>
+    <string name="settings_sign_out">Sign out</string>
+    <string name="settings_sign_out_title">Sign out?</string>
+    <string name="settings_sign_out_message">You will need to sign in again to access your account.</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_notifications_title">Notifications</string>
+    <string name="settings_notifications_empty">You're all caught up</string>
+    <string name="settings_notifications_empty_desc">Membership and payment alerts will appear here.</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_network">No internet connection. Check your network and retry.</string>
+    <string name="error_timeout">The request timed out. Please try again.</string>
+    <string name="error_unauthorized">You are not authorized to perform this action.</string>
+    <string name="error_not_found">The requested item was not found.</string>
+    <string name="error_server">Server error. Please try again later.</string>
+    <string name="error_unknown">An unexpected error occurred.</string>
+    <string name="error_retry_hint">Tap retry to try again.</string>
+
+    <!-- Content descriptions (accessibility) -->
+    <string name="cd_open_menu">Open navigation menu</string>
+    <string name="cd_back">Navigate back</string>
+    <string name="cd_search">Search</string>
+    <string name="cd_notifications">Notifications</string>
+    <string name="cd_member_avatar">Member avatar</string>
+    <string name="cd_payment_success">Payment successful</string>
+    <string name="cd_warning">Warning</string>
+    <string name="cd_error">Error</string>
+
+    <!-- Misc -->
+    <string name="currency_symbol">৳</string>
+    <string name="member_count">%1$d members</string>
+    <string name="due_amount_label">Due %1$s</string>
 </resources>

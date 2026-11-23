@@ -1,0 +1,50 @@
+{
+  "name": "GymFlow - Expiring Membership Reminders",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "days", "triggerAtHour": 9 }] }
+      },
+      "id": "schedule",
+      "name": "Daily 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "query": "select m.phone, m.full_name, me.end_date\nfrom public.members m\njoin public.memberships me on me.member_id = m.id\nwhere me.end_date between current_date and current_date + 3\n  and not exists (\n    select 1 from public.memberships newer\n    where newer.member_id = m.id and newer.start_date > me.end_date\n  );"
+      },
+      "id": "query",
+      "name": "Expiring members",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v20.0/YOUR_PHONE_NUMBER_ID/messages",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "messaging_product", "value": "whatsapp" },
+            { "name": "to", "value": "={{ $json.phone }}" },
+            { "name": "type", "value": "template" },
+            { "name": "template", "value": "={{ { name: 'membership_expiring', language: { code: 'en' }, components: [{ type: 'body', parameters: [{ type: 'text', text: $json.full_name }, { type: 'text', text: $json.end_date }] }] } }}" }
+          ]
+        }
+      },
+      "id": "whatsapp",
+      "name": "Send WhatsApp reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0]
+    }
+  ],
+  "connections": {
+    "Daily 09:00": { "main": [[{ "node": "Expiring members", "type": "main", "index": 0 }]] },
+    "Expiring members": { "main": [[{ "node": "Send WhatsApp reminder", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "timezone": "Asia/Dhaka" }
+}
