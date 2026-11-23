@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -182,6 +183,7 @@ private fun ThemeChip(
     androidx.compose.material3.FilterChip(
         selected = selected,
         onClick = onClick,
-        label = { Text(label) }
+        label = { Text(label) },
+        modifier = Modifier.minimumInteractiveComponentSize()
     )
 }

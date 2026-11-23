@@ -1,5 +1,8 @@
 package com.mannanhosen.gymflow.presentation.reports
 
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Summarize
@@ -23,10 +27,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mannanhosen.gymflow.core.util.Money
+import com.mannanhosen.gymflow.domain.model.DailyReport
 import com.mannanhosen.gymflow.presentation.components.AppTopBar
 import com.mannanhosen.gymflow.presentation.components.DatePickerField
 import com.mannanhosen.gymflow.presentation.components.ErrorState
@@ -38,6 +45,7 @@ import com.mannanhosen.gymflow.presentation.components.SectionHeader
 import com.mannanhosen.gymflow.presentation.components.SkeletonLoader
 import com.mannanhosen.gymflow.presentation.components.StatCard
 import com.mannanhosen.gymflow.ui.theme.Spacing
+import java.io.File
 
 @Composable
 fun DailyReportScreen(
@@ -46,6 +54,7 @@ fun DailyReportScreen(
     viewModel: DailyReportViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Scaffold(
         modifier = modifier,
@@ -138,12 +147,12 @@ fun DailyReportScreen(
                     }
 
                     PrimaryButton(
-                        text = "Export report",
-                        onClick = {},
-                        icon = Icons.Filled.Summarize
+                        text = "Export CSV",
+                        onClick = { exportReport(context, report) },
+                        icon = Icons.Filled.IosShare
                     )
                     InfoBanner(
-                        message = "PDF and Excel export will be available in a future release.",
+                        message = "Opens the report as a CSV file — ready for Excel or Google Sheets.",
                         type = BannerType.INFO
                     )
                 }
@@ -161,5 +170,32 @@ private fun ReportLine(label: String, value: String, modifier: Modifier = Modifi
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+/**
+ * Writes the report to a cache file and opens the system share sheet.
+ *
+ * The file is handed to other apps through a content:// URI granted by
+ * FileProvider, so no storage permission is required.
+ */
+private fun exportReport(context: Context, report: DailyReport) {
+    runCatching {
+        val csv = ReportExporter.toCsv(report)
+        val file = File(context.cacheDir, ReportExporter.fileName(report))
+        file.writeText(csv)
+
+        val authority = "${context.packageName}.fileprovider"
+        val uri = FileProvider.getUriForFile(context, authority, file)
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/csv"
+            putExtra(Intent.EXTRA_SUBJECT, "GymFlow report ${report.date}")
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(intent, "Share report"))
+    }.onFailure {
+        Toast.makeText(context, "Could not export the report", Toast.LENGTH_SHORT).show()
     }
 }

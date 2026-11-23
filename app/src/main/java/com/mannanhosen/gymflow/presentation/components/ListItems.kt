@@ -70,7 +70,7 @@ fun MemberListItem(
                     maxLines = 1
                 )
                 Text(
-                    summary.member.phone,
+                    summary.member.phone.ifBlank { "No phone added" },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

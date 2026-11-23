@@ -24,5 +24,15 @@ data class StaffPermissions(
             canManagePlans = true,
             canManageStaff = true
         )
+
+        /** Staff with no explicit grants: the safest default. */
+        fun none(staffId: String) = StaffPermissions(staffId = staffId)
     }
 }
+
+/** A staff profile shown in the permissions screen. */
+data class StaffMember(
+    val id: String,
+    val fullName: String,
+    val email: String
+)

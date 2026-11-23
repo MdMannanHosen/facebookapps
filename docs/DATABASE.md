@@ -59,6 +59,17 @@ phone until staff record one.
 - Writes an `audit_logs` row and an `integration_outbox` row (`payment_receipt`)
   so n8n can send the WhatsApp receipt.
 
+### `refund_payment(p_payment_id, p_amount, p_reason, p_idempotency_key, p_collected_by)`
+- Idempotent on `p_idempotency_key`.
+- Only `SUCCESS` payments can be refunded.
+- Rejects amounts above `paid - already refunded` for that membership.
+- Appends a **new** row with `status = 'REFUNDED'`; the original row is never
+  changed, so the ledger stays append-only.
+- Inserts `payment_events` (`CREATED`, `REFUNDED` on the new row and `REFUNDED` on
+  the original), an `audit_logs` row, and a `refund_receipt` outbox row.
+- `member_overview` recomputes dues from `fee - SUCCESS + REFUNDED`, so a refund
+  raises the outstanding due again with no extra work.
+
 ## Time handling
 
 - `timestamptz` everywhere (UTC).

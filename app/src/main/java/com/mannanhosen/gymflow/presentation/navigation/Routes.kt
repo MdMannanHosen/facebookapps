@@ -21,6 +21,7 @@ object Routes {
     const val NOTIFICATIONS = "notifications"
     const val PLANS = "plans"
     const val PAY_ONLINE = "pay_online"
+    const val STAFF_PERMISSIONS = "staff_permissions"
 
     const val MEMBER_DETAIL = "member_detail/{memberId}"
     const val MEMBER_EDIT = "member_edit?memberId={memberId}"

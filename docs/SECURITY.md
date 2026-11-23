@@ -30,10 +30,19 @@
 
 - The client **never** decides whether a payment succeeded.
 - Cash is `SUCCESS` server-side; online payments remain `PENDING` until verified
-  by a signed webhook.
+  by a signed webhook handled by `supabase/functions/verify-payment`.
 - Every payment carries an `idempotency_key`; retries return the original row.
 - Overpayment above the outstanding due is rejected in the RPC.
+- Refunds are staff-only (`refund_payment` requires `is_staff()`), capped at
+  `paid - already refunded`, and appended as a new `REFUNDED` row.
 - Payment history is append-only; no silent deletes.
+
+## Staff permissions
+
+- Owner and staff are distinguished by `profiles.role`.
+- `staff_permissions` rows are writable only by owners (RLS `staff_permissions_write`).
+- The app mirrors the grants in `CheckStaffPermission` for UI gating only; every
+  RPC and policy re-checks them server-side.
 
 ## Webhook verification (server-side)
 

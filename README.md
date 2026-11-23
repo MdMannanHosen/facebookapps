@@ -23,10 +23,12 @@ Jetpack Compose, Material 3, Clean Architecture, MVVM, Hilt and Supabase.
 | Automatic expiry calculation | ✅ | ✅ |
 | Receive payment (cash / bKash / Nagad / card / bank) | ✅ | — |
 | Partial payments & outstanding dues | ✅ | ✅ (view) |
+| Refunds (append-only reversal) | ✅ | — |
 | Payment history | ✅ | ✅ (own) |
 | Expiring memberships | ✅ | — |
 | Notifications | ✅ | ✅ |
-| Daily business report | ✅ | — |
+| Daily business report + CSV export | ✅ | — |
+| Staff permissions | ✅ | — |
 | Settings + theme (light/dark/system) | ✅ | ✅ |
 
 Online payment is scaffolded (gateway checkout is a server-side integration) and
@@ -152,6 +154,10 @@ Key rules implemented in SQL:
 - `record_payment(...)`: idempotent via `idempotency_key`, rejects overpayment,
   marks cash as `SUCCESS` and online as `PENDING`, writes `payment_events` and a
   WhatsApp outbox row.
+- `refund_payment(...)`: appends a `REFUNDED` row (the ledger is never mutated),
+  caps the refund at `paid - already refunded`, writes `payment_events` and a
+  `refund_receipt` outbox row. `member_overview` adds REFUNDED rows back into the
+  due amount automatically.
 - RLS: members read only their own data; staff/owner are gated by role; owners
   manage plans/settings/staff permissions.
 
@@ -198,13 +204,15 @@ reliable queue consumed by n8n for WhatsApp receipts, reminders and Google Sheet
 ## 10. Known limitations / next steps
 
 - Online payment (SSLCommerz) checkout is a server-side integration; the UI shows
-  a placeholder and never simulates success.
-- PDF/Excel export is stubbed.
-- Staff-permission management UI is scaffolded (owner entry point present).
+  a placeholder and never simulates success. `supabase/functions/verify-payment/index.ts`
+  is the skeleton that settles a payment from a signed webhook.
+- Report export produces CSV (opens in Excel/Sheets); a pixel-perfect PDF is not included.
 - Offline mode is intentionally not implemented; the app shows loading/error/retry
   states and never replays financial writes automatically.
 - Font uses the system default until Inter font files are bundled (`Type.kt`).
 - Deep links / push (FCM) plumbing is reserved but not wired.
+- A member cannot renew their own membership: `create_membership` requires `is_staff()`,
+  so an owner or staff member must complete the renewal.
 
 ---
 

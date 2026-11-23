@@ -1,4 +1,6 @@
 package com.mannanhosen.gymflow.presentation.payment
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.horizontalScroll
 
 import androidx.compose.foundation.layout.Arrangement
@@ -55,10 +57,23 @@ fun ReceivePaymentScreen(
     onDone: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (memberId.isNullOrBlank()) {
-        MemberPicker(onBack = onBack, onPick = onPickedMember, modifier = modifier)
-    } else {
-        PaymentForm(onBack = onBack, onDone = onDone, modifier = modifier)
+    Crossfade(
+        targetState = memberId.isNullOrBlank(),
+        animationSpec = tween(durationMillis = 200),
+        label = "paymentStep",
+        modifier = modifier
+    ) { picking ->
+        if (picking) {
+            MemberPicker(
+                onBack = onBack,
+                onPick = onPickedMember
+            )
+        } else {
+            PaymentForm(
+                onBack = onBack,
+                onDone = onDone
+            )
+        }
     }
 }
 

@@ -1,5 +1,7 @@
 package com.mannanhosen.gymflow.presentation.membership
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -58,18 +60,23 @@ fun MembershipScreen(
     onDone: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (memberId.isNullOrBlank()) {
-        MemberPicker(
-            onBack = onBack,
-            onPick = onPickedMember,
-            modifier = modifier
-        )
-    } else {
-        MembershipForm(
-            onBack = onBack,
-            onDone = onDone,
-            modifier = modifier
-        )
+    Crossfade(
+        targetState = memberId.isNullOrBlank(),
+        animationSpec = tween(durationMillis = 200),
+        label = "membershipStep",
+        modifier = modifier
+    ) { picking ->
+        if (picking) {
+            MemberPicker(
+                onBack = onBack,
+                onPick = onPickedMember
+            )
+        } else {
+            MembershipForm(
+                onBack = onBack,
+                onDone = onDone
+            )
+        }
     }
 }
 

@@ -16,9 +16,20 @@ data class RecordPaymentInput(
     val idempotencyKey: String
 )
 
+/** Input for reversing a successful payment. */
+data class RefundPaymentInput(
+    val paymentId: String,
+    val amount: Double,
+    val reason: String? = null,
+    /** Idempotency key to prevent duplicate financial writes on retry. */
+    val idempotencyKey: String
+)
+
 interface PaymentRepository {
 
     suspend fun recordPayment(input: RecordPaymentInput): NetworkResult<Payment>
+
+    suspend fun refundPayment(input: RefundPaymentInput): NetworkResult<Payment>
 
     suspend fun getPaymentHistory(memberId: String): NetworkResult<List<Payment>>
 

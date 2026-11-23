@@ -19,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -109,7 +110,8 @@ fun MembersScreen(
                         items(state.members, key = { it.member.id }) { summary ->
                             MemberListItem(
                                 summary = summary,
-                                onClick = { onOpenMember(summary.member.id) }
+                                onClick = { onOpenMember(summary.member.id) },
+                                modifier = Modifier.animateItem()
                             )
                         }
                     }
@@ -142,7 +144,8 @@ private fun FilterRow(
             FilterChip(
                 selected = selected == filter,
                 onClick = { onSelect(filter) },
-                label = { androidx.compose.material3.Text(label) }
+                label = { androidx.compose.material3.Text(label) },
+                modifier = Modifier.minimumInteractiveComponentSize()
             )
         }
     }

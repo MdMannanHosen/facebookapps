@@ -1,0 +1,72 @@
+{
+  "name": "GymFlow - Daily Report to Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "cronExpression", "expression": "30 22 * * *" }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "Daily 22:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "query": "with params as (\n  select (now() at time zone 'Asia/Dhaka')::date as business_date\n),\npay as (\n  select\n    (p.paid_at at time zone 'Asia/Dhaka')::date as business_date,\n    p.amount,\n    p.method,\n    p.status\n  from public.payments p\n  where p.paid_at is not null\n),\nagg as (\n  select\n    coalesce(sum(amount) filter (where business_date = (select business_date from params)), 0) as collection,\n    coalesce(sum(amount) filter (where business_date = (select business_date from params) and method = 'CASH'), 0) as cash,\n    coalesce(sum(amount) filter (where business_date = (select business_date from params) and method <> 'CASH'), 0) as online,\n    count(*) filter (where business_date = (select business_date from params)) as payments_count\n  from pay\n  where status = 'SUCCESS'\n),\nnew_members as (\n  select count(*) as new_members\n  from public.members\n  where joined_at = (select business_date from params)\n),\nrenewals as (\n  select count(*) as renewals\n  from public.memberships m\n  where m.start_date = (select business_date from params)\n    and exists (\n      select 1 from public.memberships prev\n      where prev.member_id = m.member_id\n        and prev.end_date < m.start_date\n    )\n),\ndues as (\n  select coalesce(sum(greatest(ms.fee - coalesce(p.paid, 0) + coalesce(p.refunded, 0), 0)), 0) as dues\n  from public.memberships ms\n  left join (\n    select\n      membership_id,\n      sum(amount) filter (where status = 'SUCCESS') as paid,\n      sum(amount) filter (where status = 'REFUNDED') as refunded\n    from public.payments\n    group by membership_id\n  ) p on p.membership_id = ms.id\n  where ms.end_date >= current_date\n)\nselect\n  (select business_date from params) as date,\n  a.collection,\n  a.cash,\n  a.online,\n  nm.new_members,\n  r.renewals,\n  a.payments_count,\n  d.dues\nfrom agg a, new_members nm, renewals r, dues d;"
+      },
+      "id": "report",
+      "name": "Daily report",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "sheets",
+      "name": "Append row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "query": "insert into public.notifications (title, body, type)\nvalues (\n  'Daily report synced',\n  'Collection: ' || '{{ $json.collection }}' || ' ৳ · Cash: ' || '{{ $json.cash }}' || ' ৳ · Online: ' || '{{ $json.online }}' || ' ৳ · New: ' || '{{ $json.new_members }}' || ' · Renewals: ' || '{{ $json.renewals }}',\n  'REPORT'\n);"
+      },
+      "id": "notify",
+      "name": "Notify owner",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [660, 0]
+    }
+  ],
+  "connections": {
+    "Daily 22:30": { "main": [[{ "node": "Daily report", "type": "main", "index": 0 }]] },
+    "Daily report": { "main": [[{ "node": "Append row", "type": "main", "index": 0 }]] },
+    "Append row": { "main": [[{ "node": "Notify owner", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "timezone": "Asia/Dhaka" }
+}

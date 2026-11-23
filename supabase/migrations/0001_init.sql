@@ -172,7 +172,7 @@ create table if not exists public.notifications (
   title       text not null,
   body        text not null default '',
   type        text not null default 'GENERAL'
-              check (type in ('PAYMENT_DUE', 'MEMBERSHIP_EXPIRING', 'PAYMENT_RECEIVED', 'GENERAL')),
+              check (type in ('PAYMENT_DUE', 'MEMBERSHIP_EXPIRING', 'PAYMENT_RECEIVED', 'REPORT', 'GENERAL')),
   is_read     boolean not null default false,
   created_at  timestamptz not null default now()
 );
@@ -580,6 +580,120 @@ $$;
 
 grant execute on function public.create_membership(uuid, uuid, date, boolean) to authenticated;
 grant execute on function public.record_payment(uuid, uuid, numeric, text, text, text, text, uuid) to authenticated;
+
+-- ===========================================================================
+-- RPC: refund_payment — reverses a successful payment
+--
+-- A refund is written as a NEW payments row with status = 'REFUNDED' (the
+-- ledger is append-only; the original row is never mutated). The
+-- member_overview view already adds REFUNDED rows back into the due amount,
+-- so a refund automatically raises the outstanding due again.
+-- ===========================================================================
+create or replace function public.refund_payment(
+  p_payment_id uuid,
+  p_amount numeric,
+  p_reason text default null,
+  p_idempotency_key text,
+  p_collected_by uuid default null
+)
+returns public.payments
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_original   public.payments;
+  v_existing   public.payments;
+  v_refunded   numeric(12, 2);
+  v_paid       numeric(12, 2);
+  v_row        public.payments;
+begin
+  if not public.is_staff() then
+    raise exception 'Not authorized' using errcode = '42501';
+  end if;
+
+  -- Idempotency: return the original row if the key was already used.
+  select * into v_existing from public.payments where idempotency_key = p_idempotency_key;
+  if v_existing.id is not null then
+    return v_existing;
+  end if;
+
+  select * into v_original from public.payments where id = p_payment_id;
+  if v_original.id is null then
+    raise exception 'Payment not found' using errcode = 'P0002';
+  end if;
+
+  if v_original.status <> 'SUCCESS' then
+    raise exception 'Only successful payments can be refunded' using errcode = 'P0001';
+  end if;
+
+  if p_amount is null or p_amount <= 0 then
+    raise exception 'Amount must be greater than zero' using errcode = 'P0001';
+  end if;
+
+  -- Refunds are capped by what was actually paid for the membership.
+  select coalesce(sum(amount), 0) into v_paid
+  from public.payments
+  where membership_id = v_original.membership_id and status = 'SUCCESS';
+
+  select coalesce(sum(amount), 0) into v_refunded
+  from public.payments
+  where membership_id = v_original.membership_id and status = 'REFUNDED';
+
+  if p_amount > (v_paid - v_refunded) then
+    raise exception 'Amount exceeds the refundable total' using errcode = 'P0001';
+  end if;
+
+  insert into public.payments (
+    member_id, membership_id, amount, method, status, paid_at, reference, note,
+    collected_by, idempotency_key
+  )
+  values (
+    v_original.member_id,
+    v_original.membership_id,
+    p_amount,
+    v_original.method,
+    'REFUNDED',
+    now(),
+    v_original.reference,
+    coalesce(nullif(p_reason, ''), 'Refund of payment ' || v_original.id::text),
+    coalesce(p_collected_by, auth.uid()),
+    p_idempotency_key
+  )
+  returning * into v_row;
+
+  insert into public.payment_events (payment_id, type, amount) values (v_row.id, 'CREATED', p_amount);
+  insert into public.payment_events (payment_id, type, amount) values (v_row.id, 'REFUNDED', p_amount);
+  insert into public.payment_events (payment_id, type, amount) values (v_original.id, 'REFUNDED', p_amount);
+
+  insert into public.audit_logs (actor_id, action, entity, entity_id, metadata)
+  values (
+    auth.uid(), 'REFUND_PAYMENT', 'payments', v_row.id,
+    jsonb_build_object(
+      'original_payment_id', v_original.id,
+      'member_id', v_original.member_id,
+      'amount', p_amount,
+      'reason', p_reason
+    )
+  );
+
+  -- Queue a refund notification via n8n.
+  insert into public.integration_outbox (kind, payload)
+  values (
+    'refund_receipt',
+    jsonb_build_object(
+      'payment_id', v_row.id,
+      'original_payment_id', v_original.id,
+      'member_id', v_original.member_id,
+      'amount', p_amount
+    )
+  );
+
+  return v_row;
+end;
+$$;
+
+grant execute on function public.refund_payment(uuid, numeric, text, text, uuid) to authenticated;
 
 -- ===========================================================================
 -- Seed default plans

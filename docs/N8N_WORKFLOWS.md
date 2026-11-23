@@ -46,13 +46,35 @@ Sample workflow: [`workflows/expiring_reminders.json`](../workflows/expiring_rem
 
 Sample workflow: [`workflows/payment_receipt_whatsapp.json`](../workflows/payment_receipt_whatsapp.json)
 
-## 3) Daily report to Google Sheets
+## 3) Refund receipt via WhatsApp
+
+- **Trigger:** Poll `integration_outbox` where `kind = 'refund_receipt'` (written by
+  the `refund_payment` RPC).
+- **Steps:**
+  1. Read `payload.payment_id`.
+  2. Fetch the refund row + member phone.
+  3. Send the `refund_receipt` template.
+  4. Mark the outbox row `SENT`.
+
+Sample workflow: [`workflows/refund_receipt_whatsapp.json`](../workflows/refund_receipt_whatsapp.json)
+
+## 4) Daily report to Google Sheets
 
 - **Trigger:** Schedule (daily 22:30 Asia/Dhaka) or owner taps "Export".
 - **Steps:**
   1. Compute the daily report (same rules as `DailyReport`).
   2. Append a row to a Google Sheet (Date, Collection, Cash, Online, New, Renewals, Dues).
-  3. Optionally post a summary to the owner's WhatsApp.
+  3. Insert a `notifications` row so the owner sees the summary in-app.
+- **Setup:**
+  1. Create a spreadsheet with a header row: `date, collection, cash, online, new_members, renewals, payments_count, dues`.
+  2. Share the sheet with the n8n Google service account (Editor).
+  3. Open [`workflows/daily_report_to_sheets.json`](../workflows/daily_report_to_sheets.json) in n8n, replace
+     `YOUR_GOOGLE_SHEET_ID`, and pick the sheet tab.
+  4. Add a Google credential in n8n (service account JSON with Sheets scope).
+- **Idempotency:** the run is date-scoped; re-running for the same business date appends a
+  second row. Add a unique `date` check in the sheet if you need exactly-once rows.
+
+Sample workflow: [`workflows/daily_report_to_sheets.json`](../workflows/daily_report_to_sheets.json)
 
 ## Credentials (n8n, never in the app)
 

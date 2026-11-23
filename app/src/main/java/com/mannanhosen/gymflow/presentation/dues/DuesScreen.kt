@@ -106,7 +106,8 @@ fun DuesScreen(
                 items(state.members, key = { it.member.id }) { summary ->
                     MemberListItem(
                         summary = summary,
-                        onClick = { onCollect(summary.member.id) }
+                        onClick = { onCollect(summary.member.id) },
+                        modifier = Modifier.animateItem()
                     )
                 }
             }

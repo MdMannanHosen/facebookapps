@@ -1,0 +1,72 @@
+{
+  "name": "GymFlow - Refund Receipt (WhatsApp)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 1 }] }
+      },
+      "id": "poll",
+      "name": "Every minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "query": "select id, payload from public.integration_outbox where kind = 'refund_receipt' and status = 'PENDING' order by created_at asc limit 25;"
+      },
+      "id": "outbox",
+      "name": "Pending refunds",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "query": "select r.id, r.amount, r.method, r.paid_at, m.full_name, m.phone\nfrom public.payments r\njoin public.members m on m.id = r.member_id\nwhere r.id = ({{ $json.payload }}->>'payment_id')::uuid;"
+      },
+      "id": "refund",
+      "name": "Load refund",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v20.0/YOUR_PHONE_NUMBER_ID/messages",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "messaging_product", "value": "whatsapp" },
+            { "name": "to", "value": "={{ $json.phone }}" },
+            { "name": "type", "value": "template" },
+            { "name": "template", "value": "={{ { name: 'refund_receipt', language: { code: 'en' }, components: [{ type: 'body', parameters: [{ type: 'text', text: $json.full_name }, { type: 'text', text: String($json.amount) }, { type: 'text', text: $json.method }, { type: 'text', text: String($json.paid_at) }] }] } }}" }
+          ]
+        }
+      },
+      "id": "send",
+      "name": "Send refund receipt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "query": "update public.integration_outbox set status = 'SENT', sent_at = now() where id = '{{ $('Pending refunds').item.json.id }}';"
+      },
+      "id": "mark",
+      "name": "Mark sent",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [880, 0]
+    }
+  ],
+  "connections": {
+    "Every minute": { "main": [[{ "node": "Pending refunds", "type": "main", "index": 0 }]] },
+    "Pending refunds": { "main": [[{ "node": "Load refund", "type": "main", "index": 0 }]] },
+    "Load refund": { "main": [[{ "node": "Send refund receipt", "type": "main", "index": 0 }]] },
+    "Send refund receipt": { "main": [[{ "node": "Mark sent", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "timezone": "Asia/Dhaka" }
+}

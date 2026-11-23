@@ -6,12 +6,14 @@ import com.mannanhosen.gymflow.data.repository.MemberRepositoryImpl
 import com.mannanhosen.gymflow.data.repository.MembershipRepositoryImpl
 import com.mannanhosen.gymflow.data.repository.NotificationRepositoryImpl
 import com.mannanhosen.gymflow.data.repository.PaymentRepositoryImpl
+import com.mannanhosen.gymflow.data.repository.StaffRepositoryImpl
 import com.mannanhosen.gymflow.domain.repository.AuthRepository
 import com.mannanhosen.gymflow.domain.repository.DashboardRepository
 import com.mannanhosen.gymflow.domain.repository.MemberRepository
 import com.mannanhosen.gymflow.domain.repository.MembershipRepository
 import com.mannanhosen.gymflow.domain.repository.NotificationRepository
 import com.mannanhosen.gymflow.domain.repository.PaymentRepository
+import com.mannanhosen.gymflow.domain.repository.StaffRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -45,4 +47,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindNotificationRepository(impl: NotificationRepositoryImpl): NotificationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindStaffRepository(impl: StaffRepositoryImpl): StaffRepository
 }

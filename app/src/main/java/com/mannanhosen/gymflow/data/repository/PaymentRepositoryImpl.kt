@@ -49,6 +49,26 @@ class PaymentRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun refundPayment(input: RefundPaymentInput): NetworkResult<Payment> {
+        // Cap enforcement, idempotency and audit all happen inside the RPC.
+        val result = client.post(
+            path = "/rpc/refund_payment",
+            prefer = "return=representation",
+            body = buildJsonObject {
+                put("p_payment_id", input.paymentId)
+                put("p_amount", input.amount)
+                input.reason?.takeIf { it.isNotBlank() }?.let { put("p_reason", it) }
+                put("p_idempotency_key", input.idempotencyKey)
+                put("p_collected_by", sessionManager.current()?.userId)
+            }
+        )
+        return result.parseFirst { element ->
+            SupabaseConfig.json
+                .decodeFromJsonElement(PaymentDto.serializer(), element)
+                .toDomain()
+        }
+    }
+
     override suspend fun getPaymentHistory(memberId: String): NetworkResult<List<Payment>> {
         val result = client.get(
             "/payments",

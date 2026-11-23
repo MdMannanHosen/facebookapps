@@ -55,6 +55,7 @@ import com.mannanhosen.gymflow.presentation.payment.ReceivePaymentScreen
 import com.mannanhosen.gymflow.presentation.plans.PlansScreen
 import com.mannanhosen.gymflow.presentation.reports.DailyReportScreen
 import com.mannanhosen.gymflow.presentation.settings.SettingsScreen
+import com.mannanhosen.gymflow.presentation.settings.StaffPermissionsScreen
 import com.mannanhosen.gymflow.ui.theme.Spacing
 
 /** Root composable that shows a splash until the session/start destination resolves. */
@@ -176,7 +177,7 @@ private fun GymFlowNavHost(
             }
 
             composable(Routes.MEMBER_PROFILE) {
-                SettingsContent(session, viewModel) {
+                SettingsContent(session, viewModel, onOpenStaffPermissions = null) {
                     viewModel.signOut()
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(0) { inclusive = true }
@@ -185,12 +186,18 @@ private fun GymFlowNavHost(
             }
 
             composable(Routes.SETTINGS) {
-                SettingsContent(session, viewModel) {
+                SettingsContent(session, viewModel, onOpenStaffPermissions = {
+                    navController.navigate(Routes.STAFF_PERMISSIONS)
+                }) {
                     viewModel.signOut()
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(0) { inclusive = true }
                     }
                 }
+            }
+
+            composable(Routes.STAFF_PERMISSIONS) {
+                StaffPermissionsScreen(onBack = { navController.popBackStack() })
             }
 
             composable(
@@ -282,6 +289,7 @@ private fun GymFlowNavHost(
 private fun SettingsContent(
     session: UserSession?,
     viewModel: MainViewModel,
+    onOpenStaffPermissions: (() -> Unit)?,
     onSignOut: () -> Unit
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
@@ -295,9 +303,7 @@ private fun SettingsContent(
         onSignOut = onSignOut,
         onBack = {},
         showBack = false,
-        onOpenStaffPermissions = if (role == UserRole.OWNER) {
-            { /* Staff permission management is a future module. */ }
-        } else null
+        onOpenStaffPermissions = if (role == UserRole.OWNER) onOpenStaffPermissions else null
     )
 }
 
